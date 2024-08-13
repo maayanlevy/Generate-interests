@@ -79,7 +79,7 @@ def generate_interests(place_details, openai_api_key):
             ...
         ]
     }}
-    Ensure that you include at least one interest in the list.
+    Ensure that you include only interests from the provided list.
     """
 
     client = OpenAI(api_key=openai_api_key)
