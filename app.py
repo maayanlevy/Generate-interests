@@ -11,10 +11,10 @@ import pydantic
 PYDANTIC_V2 = pydantic.VERSION.startswith("2.")
 
 # Constants
-GOOGLE_API_KEY = 'AIzaSyDBU6gh-_zdkIp50SQ4he1h7Ay6NF8xn8Q'
 GOOGLE_PLACE_DETAILS_URL = 'https://maps.googleapis.com/maps/api/place/details/json'
 
 # Load interests from the CSV file
+@st.cache_data
 def load_interests_from_csv(file_path):
     with open(file_path, 'r') as f:
         reader = csv.reader(f)
@@ -45,11 +45,11 @@ def validate_json(json_data, model):
         return model.parse_raw(json_data)
 
 # Function to get place details from Google Places API
-def get_place_details(place_id):
+def get_place_details(place_id, google_api_key):
     params = {
         'place_id': place_id,
         'fields': 'name,formatted_address,types,editorial_summary',
-        'key': GOOGLE_API_KEY
+        'key': google_api_key
     }
     response = requests.get(GOOGLE_PLACE_DETAILS_URL, params=params)
     return response.json()
@@ -110,13 +110,16 @@ st.title("Place Interests Generator")
 # Input for Google Place ID
 place_id = st.text_input("Enter Google Place ID:")
 
+# Input for Google API Key
+google_api_key = st.text_input("Enter Google API Key:", type="password")
+
 # Input for OpenAI API Key
 openai_api_key = st.text_input("Enter OpenAI API Key:", type="password")
 
 if st.button("Generate Interests"):
-    if place_id and openai_api_key:
+    if place_id and google_api_key and openai_api_key:
         # Get place details
-        place_details = get_place_details(place_id)
+        place_details = get_place_details(place_id, google_api_key)
         
         if place_details['status'] == 'OK':
             st.subheader("Place Details:")
@@ -139,7 +142,7 @@ if st.button("Generate Interests"):
         else:
             st.error(f"Error fetching place details: {place_details['status']}")
     else:
-        st.warning("Please enter both Google Place ID and OpenAI API Key.")
+        st.warning("Please enter Google Place ID, Google API Key, and OpenAI API Key.")
 
 # Instructions
 st.markdown("""
@@ -149,8 +152,9 @@ st.markdown("""
    pip install -r requirements.txt
    ```
 2. Enter a valid Google Place ID. You can find Place IDs using the [Google Places API Place ID Finder](https://developers.google.com/maps/documentation/places/web-service/place-id).
-3. Enter your OpenAI API Key.
-4. Click "Generate Interests" to fetch place details and generate matching interests.
+3. Enter your Google API Key.
+4. Enter your OpenAI API Key.
+5. Click "Generate Interests" to fetch place details and generate matching interests.
 
 Note: Make sure you have the necessary API keys and permissions to use Google Places API and OpenAI API.
 
