@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import json
 import csv
-import openai
+from openai import OpenAI
 from pydantic import BaseModel, Field
 from typing import List
 import pydantic
@@ -82,9 +82,9 @@ def generate_interests(place_details, openai_api_key):
     Ensure that you include at least one interest in the list.
     """
 
-    openai.api_key = openai_api_key
+    client = OpenAI(api_key=openai_api_key)
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are a helpful assistant that generates structured data about place interests."},
